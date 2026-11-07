@@ -1,0 +1,39 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Package Windows executable
+        run: npx electron-builder --win --x64 --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ibtipoint-Windows-App
+          path: release/*.exe
+          if-no-files-found: error
+          retention-days: 30
